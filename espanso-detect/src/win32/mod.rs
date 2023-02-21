@@ -181,14 +181,12 @@ impl Source for Win32Source {
       // Filter out keyboard events without an explicit HID device source.
       // This is needed to filter out the software-generated events, including
       // those from espanso.
-      log::warn!("got injection");
       if event.event_type == INPUT_EVENT_TYPE_KEYBOARD
         && event.has_known_source == 0
         && (unsafe { (*_self).exclude_orphan_events }
           || espanso_info::expansion_is_in_progress()
         )
       {
-        log::warn!("discarding");
         trace!("skipping keyboard event with unknown HID source (probably software generated).");
         return;
       }

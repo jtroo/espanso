@@ -45,7 +45,7 @@ impl<'a> Executor for KeyInjectExecutor<'a> {
       if let Err(error) = self.injector.inject_sequence(&inject_event.keys) {
         error!("key injector reported an error: {}", error);
       }
-      std::thread::sleep(std::time::Duration::from_millis(100));
+      std::thread::sleep(std::time::Duration::from_millis(25));
       espanso_info::set_expansion_is_in_progress(false);
       return true;
     }
