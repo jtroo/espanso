@@ -11,6 +11,7 @@ thiserror = "1.0.23"
 crossbeam = "0.8.0"
 markdown = "0.3.0"
 html2text = "0.2.1"
+espanso-info = { path = "../espanso-info" }
 
 
 [dev-dependencies]

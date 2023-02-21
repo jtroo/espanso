@@ -66,6 +66,8 @@ impl<'a> TextInjectExecutor<'a> {
 impl<'a> Executor for TextInjectExecutor<'a> {
   fn execute(&self, event: &Event) -> bool {
     if let EventType::TextInject(inject_event) = &event.etype {
+      log::warn!("blah de blooh");
+      espanso_info::set_expansion_is_in_progress(true);
       let active_mode = self.mode_provider.active_mode();
 
       let injector = if let Some(force_mode) = &inject_event.force_mode {
@@ -106,7 +108,8 @@ impl<'a> Executor for TextInjectExecutor<'a> {
           error
         );
       }
-
+      std::thread::sleep(std::time::Duration::from_millis(100));
+      espanso_info::set_expansion_is_in_progress(false);
       return true;
     }
 

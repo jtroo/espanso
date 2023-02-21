@@ -70,3 +70,14 @@ pub fn get_provider() -> Result<Box<dyn AppInfoProvider>> {
   info!("using WaylandAppInfoProvider");
   Ok(Box::new(wayland::WaylandAppInfoProvider::new()))
 }
+
+use std::sync::atomic::{AtomicBool, Ordering::SeqCst};
+static EXPANSION_IS_IN_PROGRESS: AtomicBool = AtomicBool::new(false);
+
+pub fn set_expansion_is_in_progress(is_in_progress: bool) {
+    EXPANSION_IS_IN_PROGRESS.store(is_in_progress, SeqCst);
+}
+
+pub fn expansion_is_in_progress() -> bool {
+    EXPANSION_IS_IN_PROGRESS.load(SeqCst)
+}
