@@ -19,7 +19,10 @@
 
 use crate::{
   dispatch::Executor,
-  event::{effect::TextInjectMode, Event, EventType},
+  event::{
+    effect::{self, TextInjectMode},
+    Event, EventType,
+  },
 };
 use anyhow::Result;
 use log::{error, trace};
@@ -50,6 +53,32 @@ pub struct TextInjectExecutor<'a> {
 }
 
 impl<'a> TextInjectExecutor<'a> {
+  fn inject_by_clipboard(&self, event: &effect::TextInjectRequest) {
+    trace!("using injector: {}", self.clipboard_injector.name());
+    if let Err(error) = self.clipboard_injector.inject_text(&event.text) {
+      error!(
+        "text injector ({}) reported an error: {:?}",
+        self.clipboard_injector.name(),
+        error
+      );
+    }
+  }
+
+  fn inject_by_event(&self, event: &effect::TextInjectRequest) {
+    trace!("using injector: {}", self.clipboard_injector.name());
+    #[cfg(target_os = "windows")]
+    espanso_info::add_expansion_events(event.text.chars().count());
+    if let Err(error) = self.event_injector.inject_text(&event.text) {
+      error!(
+        "text injector ({}) reported an error: {:?}",
+        self.event_injector.name(),
+        error
+      );
+    }
+  }
+}
+
+impl<'a> TextInjectExecutor<'a> {
   pub fn new(
     event_injector: &'a dyn TextInjector,
     clipboard_injector: &'a dyn TextInjector,
@@ -66,53 +95,40 @@ impl<'a> TextInjectExecutor<'a> {
 impl<'a> Executor for TextInjectExecutor<'a> {
   fn execute(&self, event: &Event) -> bool {
     if let EventType::TextInject(inject_event) = &event.etype {
-      espanso_info::set_expansion_is_in_progress(true);
       let active_mode = self.mode_provider.active_mode();
 
-      let injector = if let Some(force_mode) = &inject_event.force_mode {
+      if let Some(force_mode) = &inject_event.force_mode {
         if let TextInjectMode::Keys = force_mode {
-          self.event_injector
+          self.inject_by_event(inject_event);
         } else {
-          self.clipboard_injector
+          self.inject_by_clipboard(inject_event);
         }
       } else if let Mode::Clipboard = active_mode {
-        self.clipboard_injector
+        self.inject_by_clipboard(inject_event);
       } else if let Mode::Event = active_mode {
-        self.event_injector
+        self.inject_by_event(inject_event);
       } else if let Mode::Auto {
         clipboard_threshold,
       } = active_mode
       {
         if inject_event.text.chars().count() > clipboard_threshold {
-          self.clipboard_injector
+          self.inject_by_clipboard(inject_event);
         } else if cfg!(target_os = "linux") {
           if inject_event.text.chars().all(|c| c.is_ascii()) {
-            self.event_injector
+            self.inject_by_event(inject_event);
           } else {
-            self.clipboard_injector
+            self.inject_by_clipboard(inject_event);
           }
         } else {
-          self.event_injector
+          self.inject_by_event(inject_event);
         }
       } else {
-        self.event_injector
+        self.inject_by_event(inject_event);
       };
-
-      trace!("using injector: {}", injector.name());
-
-      if let Err(error) = injector.inject_text(&inject_event.text) {
-        error!(
-          "text injector ({}) reported an error: {:?}",
-          injector.name(),
-          error
-        );
-      }
-      std::thread::sleep(std::time::Duration::from_millis(25));
-      espanso_info::set_expansion_is_in_progress(false);
-      return true;
+      true
+    } else {
+      false
     }
-
-    false
   }
 }
 

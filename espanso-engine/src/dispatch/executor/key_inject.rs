@@ -41,12 +41,11 @@ impl<'a> KeyInjectExecutor<'a> {
 impl<'a> Executor for KeyInjectExecutor<'a> {
   fn execute(&self, event: &Event) -> bool {
     if let EventType::KeySequenceInject(inject_event) = &event.etype {
-      espanso_info::set_expansion_is_in_progress(true);
+      #[cfg(target_os = "windows")]
+      espanso_info::add_expansion_events(inject_event.keys.len());
       if let Err(error) = self.injector.inject_sequence(&inject_event.keys) {
         error!("key injector reported an error: {}", error);
       }
-      std::thread::sleep(std::time::Duration::from_millis(25));
-      espanso_info::set_expansion_is_in_progress(false);
       return true;
     }
 

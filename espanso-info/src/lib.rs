@@ -71,13 +71,23 @@ pub fn get_provider() -> Result<Box<dyn AppInfoProvider>> {
   Ok(Box::new(wayland::WaylandAppInfoProvider::new()))
 }
 
-use std::sync::atomic::{AtomicBool, Ordering::SeqCst};
-static EXPANSION_IS_IN_PROGRESS: AtomicBool = AtomicBool::new(false);
-
-pub fn set_expansion_is_in_progress(is_in_progress: bool) {
-    EXPANSION_IS_IN_PROGRESS.store(is_in_progress, SeqCst);
+#[cfg(target_os = "windows")]
+use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};
+#[cfg(target_os = "windows")]
+static EXPANSION_NUM_EVENTS_REMAINING: AtomicUsize = AtomicUsize::new(0);
+#[cfg(target_os = "windows")]
+pub fn add_expansion_events(ev_count: usize) {
+  EXPANSION_NUM_EVENTS_REMAINING.fetch_add(ev_count, SeqCst);
 }
-
+#[cfg(target_os = "windows")]
+pub fn decr_expansion_events() {
+  if EXPANSION_NUM_EVENTS_REMAINING.fetch_sub(1, SeqCst) == 0 {
+    // Defensively do saturating subtract. Events may have been added, so can't unconditionally
+    // store 0.
+    let _ = EXPANSION_NUM_EVENTS_REMAINING.compare_exchange(usize::MAX, 0, SeqCst, SeqCst);
+  }
+}
+#[cfg(target_os = "windows")]
 pub fn expansion_is_in_progress() -> bool {
-    EXPANSION_IS_IN_PROGRESS.load(SeqCst)
+  EXPANSION_NUM_EVENTS_REMAINING.load(SeqCst) > 0
 }
