@@ -1,7 +1,7 @@
 [package]
 name = "espanso"
-version = "2.2.0"
-authors = ["Federico Terzi <federicoterzi96@gmail.com>"]
+version = "1.0.2-jtroo"
+authors = ["Federico Terzi <federicoterzi96@gmail.com>", "jtroo"]
 license = "GPL-3.0"
 description = "Cross-platform Text Expander written in Rust"
 readme = "README.md"
@@ -27,20 +27,20 @@ wayland = ["espanso-detect/wayland", "espanso-inject/wayland", "espanso-clipboar
 modulo = ["espanso-modulo", "espanso-clipboard/avoid-gdi", "espanso-ui/avoid-gdi"]
 
 [dependencies]
-espanso-detect = { path = "../espanso-detect" } 
-espanso-ui = { path = "../espanso-ui" } 
-espanso-inject = { path = "../espanso-inject" } 
-espanso-config = { path = "../espanso-config" } 
-espanso-match = { path = "../espanso-match" } 
-espanso-clipboard = { path = "../espanso-clipboard" } 
-espanso-info = { path = "../espanso-info" } 
-espanso-render = { path = "../espanso-render" } 
-espanso-path = { path = "../espanso-path" } 
-espanso-ipc = { path = "../espanso-ipc" } 
+espanso-detect = { path = "../espanso-detect" }
+espanso-ui = { path = "../espanso-ui" }
+espanso-inject = { path = "../espanso-inject" }
+espanso-config = { path = "../espanso-config" }
+espanso-match = { path = "../espanso-match" }
+espanso-clipboard = { path = "../espanso-clipboard" }
+espanso-info = { path = "../espanso-info" }
+espanso-render = { path = "../espanso-render" }
+espanso-path = { path = "../espanso-path" }
+espanso-ipc = { path = "../espanso-ipc" }
 espanso-modulo = { path = "../espanso-modulo", optional = true }
-espanso-migrate = { path = "../espanso-migrate" } 
-espanso-kvs = { path = "../espanso-kvs" } 
-espanso-engine = { path = "../espanso-engine" } 
+espanso-migrate = { path = "../espanso-migrate" }
+espanso-kvs = { path = "../espanso-kvs" }
+espanso-engine = { path = "../espanso-engine" }
 espanso-package = { path = "../espanso-package"}
 maplit = "1.0.2"
 simplelog = "0.9.0"
@@ -75,7 +75,7 @@ widestring = "0.4.3"
 libc = "0.2.98"
 
 [target.'cfg(target_os="macos")'.dependencies]
-espanso-mac-utils = { path = "../espanso-mac-utils" } 
+espanso-mac-utils = { path = "../espanso-mac-utils" }
 
 [target.'cfg(target_os="linux")'.dependencies]
 caps = "0.5.2"
@@ -90,6 +90,6 @@ license-file = ["../LICENSE", "1"]
 
 [package.metadata.deb.variants.wayland]
 depends = "$auto, systemd, libnotify-bin, libxkbcommon0, libwxgtk3.0-gtk3-0v5, wl-clipboard"
-# TODO: once this issue [1] is fixed, we should create a variant for 
+# TODO: once this issue [1] is fixed, we should create a variant for
 # wayland to automatically run the setcap script.
 # [1]: https://github.com/mmstick/cargo-deb/issues/151
